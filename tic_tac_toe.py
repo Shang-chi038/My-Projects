@@ -21,29 +21,44 @@ def enter_move(board):
     while True: 
         try: 
             move = int(input("\nEnter the square you want to make your move in: ")) # Accepts
-            
         except ValueError: 
-            try: 
-                move = int(input("Please enter a positive integer from between 1 to 9, inclusive: "))
-            # incase
-            except: 
-                print("Sorry, cannot help you.")
-                break
+            print("Please enter a positive integer between 1 and 9.")
+            continue
         
-        if 0 < move < 10: # Checks
-                if move < 4:
-                    board[0][move -1] = 'o' # updates
-                elif move < 7: 
-                    board[1][move - 4] = 'o' 
-                elif move < 10: 
-                    board[2][move - 7] = 'o' 
-    
-                display_board(board)
-                print("You have played.")
-                victory_for(board, 'x')
-                draw_move(board)
-                break
-        else: continue
+        if move not in range(1, 10): 
+            print("Invalid square. Choose between 1 and 9.")
+            continue # Checks if choosen square is valid
+        
+        # Convert the 1–9 number into (row, col)
+        if move <= 3:
+            row, col = 0, move - 1
+        elif move <= 6:
+            row, col = 1, move - 4
+        else:
+            row, col = 2, move - 7
+
+        # Check if this (row, col) is in free fields
+        free_fields = make_list_of_free_fields(board)
+        if (row, col) not in free_fields:
+            print("That square is already taken. Try again.")
+            continue
+        
+        # If valid → update the board
+        else: 
+            board[row][col] = 'o' # updates   
+        
+        display_board(board)
+        print("You have played.")
+        result = victory_for(board, 'o')
+        free_fields = make_list_of_free_fields(board)  # refresh list of empty squares again
+        
+        if result != 'Draw':   # player wins
+            print(result)
+        elif not free_fields:   # no more spaces → draw
+            print("It's a draw!")
+        else:
+            draw_move(board)   # continue game
+        break
 
 
 def make_list_of_free_fields(board):
@@ -88,32 +103,34 @@ def victory_for(board, sign):
         elif sign == 'x': return 'Computer wins'
     
     
-    return 'x & o Draw'
+    return 'Draw'
 
 
 def draw_move(board):
 #   The function draws the computer's move and updates the board.
     from random import randrange
 
+    free_fields = make_list_of_free_fields(board)
     while True:
         row = randrange(3)
         column = randrange(3)
-        if row == 0: computers_move = column + 1
-        elif row == 1: computers_move = column + 4
-        elif row == 2: computers_move = column + 7
 
-        for rows, columns in make_list_of_free_fields(board):
-            print("Computer's move =", computers_move)
-            if board[row][column] != board[rows][columns]: 
-                continue
-            elif board[row][column] == board[rows][columns]:
-                    board[2][computers_move - 7] = 'x'
-                
+        if (row, column) in free_fields:  # <-- check directly against free slots
+            board[row][column] = 'x'
+            print(f"Computer's move = {row * 3 + column + 1}")
+            break  # stop looping once move is made     
 
     display_board(board)
     print("Computer played.")
-    victory_for(board, 'x')
-    enter_move(board)
+    result = victory_for(board, 'x') # check for computer win
+    free_fields = make_list_of_free_fields(board) # to check for empty space again
+
+    if result != 'Draw':   # computer wins
+        print(result)
+    elif not free_fields:   # draw
+        print("It's a draw!")
+    else:
+        enter_move(board)   # continue game
 
 
 if __name__ == "__main__":
