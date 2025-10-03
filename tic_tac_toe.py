@@ -6,7 +6,7 @@ def display_board(board):
         print("|\t" * 4)
         
         for k in range(3):
-            print(f"|   {board[i][k]}   ", end='')
+            print(f"|   {str(board[i][k])}   ", end='')
     
         print("|")
         print("|\t" * 4)
